@@ -1,0 +1,17 @@
+[
+    {
+        "id":1,
+        "name":"Jovohir",
+        "backend":"Node js"
+    },
+    {
+        "id":2,
+        "name":"kimdir2",
+        "backend":"Frontend"
+    },
+    {
+        "id":3,
+        "name":"kimdir3",
+        "backend":"Python"
+    }
+]
