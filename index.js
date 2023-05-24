@@ -1,37 +1,66 @@
 const http = require('http')
-const fs = require('fs').promises
+const Classes = require('./modul/Classes')
+const Io = require('./Io');
+const Todos = new Io("./database/All.json")
 
 
 
-http.createServer(async (req,res)=>{
+
+
+http.createServer( async (req,res)=>{
     res.setHeader("Content-Type","application/json")
-    if (req.url === '/users' && req.method === 'GET') {
-        const users = JSON.parse(
-            await fs.readFile('./database/users.json')
+    if (req.url === '/new' && req.method === 'POST') {
+      const Database = await Todos.read()
+      const id = Database.length + 1;
+
+      req.on('data', async (data) => {
+        const Data = JSON.parse(data)
+        let yes = true
+        if (Database.length === 0) {
+          const SaveData = new Classes(
+            id,
+            Data.name,
+            Data.jami
         )
-        const teacher = JSON.parse(
-            await fs.readFile('./database/teachers.json')
-        )
-      const text = []
-      for (let i = 0; i < users.length; i++) {
-        const element = users[i];
-        for (let i = 0; i < teacher.length; i++) {
-            const teach = teacher[i];
-            if (element.teacher_id === teach.id) {
-                element.teacher_id = teach
-                text.push(element)
-                
-                
-            }
+        await Todos.write([SaveData])
+        res.end(`birinc mahsulot qowld ${Data.name}: ${Data.jami} dona`)
+
         }
-        
+         
+      for(let i = 0; i < Database.length; i++)
+      {
+        if(Database[i].name === Data.name)
+        {
+          yes = false
+          Database[i].jami += Data.jami
+          await Todos.write(Database)
+          res.end(`Bu mahsulot bor ${Database[i].jami} dona`)
+        }
       }
-     
-      
-      
-      res.statusCode = 201
-      res.end(JSON.stringify(text))
+      if(yes)
+      {
+        const SaveData = new Classes(
+         id,
+         Data.name,
+         Data.jami
+        )
+        Database.push(SaveData);
+        await Todos.write(Database)
+        res.end(`mahsulot qoshildi ${Data.name}: ${Data.jami} dona`)
+      }
+    })
+    }
+    if (req.url === "/delete" && req.method === "POST") {
+      req.on('data',async (data) => {
+        const Data = JSON.parse(data);
+        const id = Data.id
+        const Database = await Todos.read()
+        Database.splice(id - 1,1)
+        await Todos.write(Database)
+        res.end('deleting succes')
+      })
     }
 }).listen(4000,()=>{
     console.log(4000);
 })
+
